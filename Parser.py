@@ -55,7 +55,26 @@ class Element:
 
 	def read(self, openFile):
 		line = openFile.readline()
+		l = line.split()
 		while line != '':
+			if len(l) == 1:
+				if l[0][-1] == '{':
+					p = Composite(l[0][:-1], self)
+					addChild(p)
+				if l[0][-1] == '[':
+					p = Array(l[0][:-1], self)
+					addChild(p)
+				if l[0][-1] == '(':
+					p = Matrix(l[0][:-1], self)
+					addChild(p)
+			if len(l) == 1:
+				p = Parameter(l[0], self, Value(l[1]))
+				addChild(p)	
+			line = openFile.readline()
+			l = line.split()
+
+
+
 			if line[-2] == '{':
 				p = Composite(line[:-2], self)
 				addChild(p)
@@ -66,7 +85,7 @@ class Element:
 				p = Matrix(line[:-2], self)
 				addChild(p)
 			else:
-				p = Parameter(line[:line.find(' ')], self, Value(line[line.rfind(' ')+1 : -1]))
+				p = Parameter(l[0], self, Value(l[1]))
 				addChild(p)
 
 
