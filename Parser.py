@@ -14,8 +14,8 @@ File Contents:
 		in a form that allows particular types of elements within it to be accessed 
 		and modified.
 	class Parameter(Elememt):
-		A Parameter object contains a parameter label and its value within a single
-		line.
+		A Parameter object contains a parameter label and its value for the individual 
+		parameter within a single line.
 	class Array(Element):
 		An Array object is a type of parameter that has values stored as elements of
 		a one-dimensional array which is given in a multi-line format in which the
@@ -37,91 +37,63 @@ File Contents:
 	
 '''
 
+# Element class --------------------------------------------------------------------
+
 class Element:
 	'''
 	Purpose: The base class of all types of elements in the parameter file
 	Instance variables:
 		label: Element label in the parameter file
 		parent: Parent object of the element, defult to be None
-		children: Children object of the element, defult to be empty list
 	Methods:
-		read(self, filename, pos): 
-		match():
 	'''
-	def __init__(self, label, parent=None):
+	def __init__(self, label, openFile=None, parent=None, value=None):
 		self.label = label
 		self.parent = parent
-		self.children = []
 
-	def read(self, openFile):
-		line = openFile.readline()
-		l = line.split()
-		while line != '':
-			if len(l) == 1:
-				if l[0][-1] == '{':
-					p = Composite(l[0][:-1], self)
-					addChild(p)
-				if l[0][-1] == '[':
-					p = Array(l[0][:-1], self)
-					addChild(p)
-				if l[0][-1] == '(':
-					p = Matrix(l[0][:-1], self)
-					addChild(p)
-			if len(l) == 1:
-				p = Parameter(l[0], self, Value(l[1]))
-				addChild(p)	
-			line = openFile.readline()
-			l = line.split()
+# End class Element ----------------------------------------------------------------
 
-
-
-			if line[-2] == '{':
-				p = Composite(line[:-2], self)
-				addChild(p)
-			elif line[-2] == '[':
-				p = Array(line[:-2], self)
-				addChild(p)
-			elif line[-2] == '(':
-				p = Matrix(line[:-2], self)
-				addChild(p)
-			else:
-				p = Parameter(l[0], self, Value(l[1]))
-				addChild(p)
-
-
-
-
-	# def match(self):
-
-	def addChild(self, child):
-		self.children.append(child)
+# Value class ----------------------------------------------------------------------	
 
 class Value:
 	'''
-	Purpose: The object type to store values for parameters
+	Purpose: 
+		The object type to store the single value for parameters by distinguishing 
+		the exact type of it
 	Instance variables:
+		value: variable to store a single value of the parameters
+		type: the type of the value stored, either integer, floating point or string
 	Methods:
+		getType(self): return the type of stored value
+		getValue(self): return the value of stored value
+	Note:
+		Debugging by the commented line to check if the constructor has the expected 
+		function of distinguishing the exact type of the value
+
 	'''
 	def __init__(self, value):
-		if value.isnumeric() == True:
+		if value.isdigit() == True:
 			# print('int')
 			self.value = int(value)
-		elif value.find('.') != -1:
-			# print('float')
-			self.value = float(value)
 		else:
-			# print('string')
-			self.value = value
+			try:
+				self.value = float(value)
+				# print('float')
+			except ValueError:
+				self.value = value
+				# print('string')
 		# print(self.value)
-
-	# def __repr__(self):
-	# 	return self.value
+		self.type = type(self.value)
 
 	def getType(self):
-		return type(self.value)
+		return self.type
 
 	def getValue(self):
 		return self.value
+
+# End class Value ---------------------------------------------------------
+
+# Composite class ---------------------------------------------------------
 
 class Composite(Element):
 	'''
@@ -129,51 +101,154 @@ class Composite(Element):
 	Instance variables:
 	Methods:
 	'''
-	def __init__(self, label, parent=None):
-		super().__init__(self, label, parent)
+	def __init__(self, label, openFile=None, parent=None, value=None):
+		super().__init__(label, openFile, parent, value)
+		self.children = []
+		self.read(openFile)
+
+	def read(self, openFile):
+		line = openFile.readline()
+		l = line.split()
+		# print(line, end='')
+		while line != '':
+			if len(l) == 1:
+				if l[0][-1] == '{':
+					p = Composite(l[0][:-1], openFile, self, None)
+					self.addChild(p)
+				if l[0][-1] == '[':
+					p = Array(l[0][:-1], openFile, self, None)
+					self.addChild(p)
+				if l[0][-1] == '(':
+					p = Matrix(l[0][:-1], openFile, self, None)
+					self.addChild(p)
+			if len(l) == 2:
+				p = Parameter(l[0], None, self, Value(l[1]))
+				self.addChild(p)	
+			line = openFile.readline()
+			l = line.split()
+			# print(line, end='')
+
+	def addChild(self, child):
+		self.children.append(child)
 
 
-	# def read(self, openFile):
 
 	def getComposite(self):
 		print(self.children)
 
+# End class Composite ---------------------------------------------------
 
+# Parameter class -------------------------------------------------------
 		
 class Parameter(Element):
 	'''
+	Purpose: 
+		The object type of individual parameter of the parameter file
+	Instance variables:
+		label: the label of the individual parameter
+		parent: the parent of the individual parameter
+		value: the value of the indivisual parameter
+	Methods:
+		getValue(self): 
+			print out the type of the value of the indivisual parameter 
+			and return the stored value
 	'''
-	def __init__(self, label, parent, value):
-		self.label = label
-		self.parent = parent
+	def __init__(self, label, openFile=None, parent=None, value=None):
+		super().__init__(label, openFile, parent, value)
 		self.value = value
 
 	def getValue(self):
 		print(self.value.getType())
 		return self.value.getValue()
 
-# End class Parameter -----------------------------------
+# End class Parameter ---------------------------------------------------
 
+# Array class -----------------------------------------------------------
 
 class Array(Element):
 	'''
+	Purpose:
+	Instance variables:
+	Methods:
 	'''
+	def __init__(self, label, openFile=None, parent=None, value=None):
+		super().__init__(label, openFile, parent, value)
+		self.value = []
+		self.read(openFile)
+
+	def read(self, openFile):
+		line = openFile.readline()
+		l = line.split()
+		# print(line, end='')
+		while l[0] != ']':
+			if len(l) == 1:
+				self.value.append(Value(l[0]))
+			if len(l) == 2:
+				self.value.append([Value(l[0]), Value(l[1])])
+			line = openFile.readline()
+			l = line.split()
+			# print(line, end='')
+
+
+
+# End class Array -------------------------------------------------------
+
+# Matrix class ----------------------------------------------------------
 
 class Matrix(Element):
 	'''
+	Purpose:
+	Instance variables:
+	Methods:
 	'''
+
+	def __init__(self, label, openFile=None, parent=None, value=None):
+		super().__init__(label, openFile, parent, value)
+		self.value = []
+		self.read(openFile)
+
+	def read(self, openFile):
+		att = []
+		line = openFile.readline()
+		l = line.split()
+		# print(line, end='')
+		while l[0] != ')':
+			att.append(l)
+			line = openFile.readline()
+			l = line.split()
+			# print(line, end='')
+		rowMax = att[0][0]
+		colMax = att[0][1]
+		for i in range(1, len(att)):
+			if att[i][0] > rowMax:
+				rowMax = att[i][0]
+			if att[i][1] > colMax:
+				colMax = att[i][1]
+		size = int(max(rowMax, colMax))+1
+		for i in range(0, size):
+			self.value.append([])
+			for j in range(0, size):
+				self.value[i].append(Value('0'))
+		for i in range(0, len(att)):
+			self.value[int(att[i][0])][int(att[i][1])] = Value(att[i][2])
+
+# End class Matrix ------------------------------------------------------
+
+
 
 def readParamFile(filename):
 	with open(filename) as f:
 		firstLine = f.readline()
+		# print(firstLine, end='')
 		if firstLine != "System{"+'\n':
 			print('This is not a valid parameter file.')
 		else:
-			p = Composite('System')
-			p.read(filename)
+			p = Composite('System', f, None, None)
+			# p.getComposite()
+	return True
 
 
-# readParamFile('param100')
+print(readParamFile('param100'))
 
 # line = 'ds                    5.000000000000e-02\n'
 # # print(line[:line.find(' ')])
