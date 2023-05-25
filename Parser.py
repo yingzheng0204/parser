@@ -122,7 +122,7 @@ class Composite(Element):
 					p = Matrix(l[0][:-1], openFile, self, None)
 					self.addChild(p)
 			if len(l) == 2:
-				p = Parameter(l[0], None, self, Value(l[1]))
+				p = Parameter(l[0], None, self, l[1])
 				self.addChild(p)	
 			line = openFile.readline()
 			l = line.split()
@@ -131,10 +131,11 @@ class Composite(Element):
 	def addChild(self, child):
 		self.children.append(child)
 
-
-
 	def getComposite(self):
 		print(self.children)
+
+	# def __repr__(self):
+	# 	return
 
 # End class Composite ---------------------------------------------------
 
@@ -155,11 +156,14 @@ class Parameter(Element):
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
-		self.value = value
+		self.value = Value(value)
 
 	def getValue(self):
 		print(self.value.getType())
 		return self.value.getValue()
+
+	def __repr__(self):
+		return str(self.value.getValue())
 
 # End class Parameter ---------------------------------------------------
 
@@ -182,14 +186,28 @@ class Array(Element):
 		# print(line, end='')
 		while l[0] != ']':
 			if len(l) == 1:
-				self.value.append(Value(l[0]))
+				self.value.append([Value(l[0])])
 			if len(l) == 2:
 				self.value.append([Value(l[0]), Value(l[1])])
 			line = openFile.readline()
 			l = line.split()
 			# print(line, end='')
 
-
+	def __repr__(self):
+		s = ''
+		if len(self.value[0]) == 1:
+			for i in range(0, len(self.value)):
+				if i == len(self.value)-1:
+					s = s + str(self.value[i][0].getValue())
+				else:
+					s = s + str(self.value[i][0].getValue()) + '\n'
+		if len(self.value[0]) == 2:
+			for i in range(0, len(self.value)):
+				if i == len(self.value)-1:
+					s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue())
+				else:
+					s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue()) + '\n'
+		return s
 
 # End class Array -------------------------------------------------------
 
@@ -232,6 +250,18 @@ class Matrix(Element):
 		for i in range(0, len(att)):
 			self.value[int(att[i][0])][int(att[i][1])] = Value(att[i][2])
 
+	def __repr__(self):
+		s = ''
+		for i in range(0, len(self.value)):
+			for j in range(0, len(self.value[0])):
+				if j == len(self.value[0])-1:
+					s = s + str(self.value[i][j].getValue())
+				else:
+					s = s + str(self.value[i][j].getValue()) + '    '
+			if i != len(self.value)-1:
+				s = s + '\n'
+		return s
+
 # End class Matrix ------------------------------------------------------
 
 
@@ -244,11 +274,21 @@ def readParamFile(filename):
 			print('This is not a valid parameter file.')
 		else:
 			p = Composite('System', f, None, None)
+			print(p)
 			# p.getComposite()
 	return True
 
 
-print(readParamFile('param100'))
+# print(readParamFile('param100'))
+
+# a = Parameter('nMonomer', None, None, '2')
+# print(a)
+
+with open('test') as f:
+	# a = Array('block', f, None, None)
+	# print(a)
+	m = Matrix('chi', f, None, None)
+	print(m)
 
 # line = 'ds                    5.000000000000e-02\n'
 # # print(line[:line.find(' ')])

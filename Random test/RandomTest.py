@@ -38,30 +38,43 @@
 # 		print('string')
 # print(type(v), ' ', v)
 
+# with open('random') as f:
+# 	value = []
+# 	att = []
+# 	line = f.readline()
+# 	l = line.split()
+# 	while l[0] != ')':
+# 		att.append(l)
+# 		line = f.readline()
+# 		l = line.split()
+# 	print(att)
+# 	rowMax = att[0][0]
+# 	colMax = att[0][1]
+# 	for i in range(1, len(att)):
+# 		if att[i][0] > rowMax:
+# 			rowMax = att[i][0]
+# 		if att[i][1] > colMax:
+# 			colMax = att[i][1]
+# 	size = int(max(rowMax, colMax))+1
+# 	for i in range(0, size):
+# 		value.append([])
+# 		for j in range(0, size):
+# 			value[i].append(0)
+# 	for i in range(0, len(att)):
+# 		value[int(att[i][0])][int(att[i][1])] = float(att[i][2])
+# 	print(value)
+
 with open('random') as f:
 	value = []
-	att = []
 	line = f.readline()
 	l = line.split()
-	while l[0] != ')':
-		att.append(l)
+	while l[0] != ']':
+		if len(l) == 1:
+			value.append(l[0])
+		if len(l) == 2:
+			value.append([l[0], l[1]])
 		line = f.readline()
 		l = line.split()
-	print(att)
-	rowMax = att[0][0]
-	colMax = att[0][1]
-	for i in range(1, len(att)):
-		if att[i][0] > rowMax:
-			rowMax = att[i][0]
-		if att[i][1] > colMax:
-			colMax = att[i][1]
-	size = int(max(rowMax, colMax))+1
-	for i in range(0, size):
-		value.append([])
-		for j in range(0, size):
-			value[i].append(0)
-	for i in range(0, len(att)):
-		value[int(att[i][0])][int(att[i][1])] = float(att[i][2])
 	print(value)
 
 
