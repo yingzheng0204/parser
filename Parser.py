@@ -181,6 +181,7 @@ class Parameter(Element):
 	def __repr__(self):
 		return str(self.value.getValue())
 
+
 # End class Parameter ---------------------------------------------------
 
 # Array class -----------------------------------------------------------
@@ -217,30 +218,25 @@ class Array(Element):
 
 
 	def __repr__(self):
-		s = ''
-		# if len(self.value[0]) == 1:
-		# 	for i in range(0, len(self.value)):
-		# 		if i == len(self.value)-1:
-		# 			s = s + str(self.value[i][0].getValue())
+		# s = ''
+		# for i in range(len(self.value)):
+		# 	for j in range(len(self.value[0])):
+		# 		if j == len(self.value[0])-1:
+		# 			s = s + str(self.value[i][j].getValue())
 		# 		else:
-		# 			s = s + str(self.value[i][0].getValue()) + '\n'
-		# if len(self.value[0]) == 2:
-		# 	for i in range(0, len(self.value)):
-		# 		if i == len(self.value)-1:
-		# 			s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue())
-		# 		else:
-		# 			s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue()) + '\n'
+		# 			s = s + str(self.value[i][j].getValue()) + '    '
+		# 	if i != len(self.value)-1:
+		# 		s = s + '\n'
+		# return s
 
+		v = []
 		for i in range(len(self.value)):
+			v.append([])
 			for j in range(len(self.value[0])):
-				if j == len(self.value[0])-1:
-					s = s + str(self.value[i][j].getValue())
-				else:
-					s = s + str(self.value[i][j].getValue()) + '    '
-			if i != len(self.value)-1:
-				s = s + '\n'
-			
-		return s
+				v[i].append(self.value[i][j].getValue())
+		return str(v)
+
+
 
 # End class Array -------------------------------------------------------
 
@@ -284,16 +280,24 @@ class Matrix(Element):
 			self.value[int(att[i][0])][int(att[i][1])] = Value(att[i][2])
 
 	def __repr__(self):
-		s = ''
-		for i in range(0, len(self.value)):
-			for j in range(0, len(self.value[0])):
-				if j == len(self.value[0])-1:
-					s = s + str(self.value[i][j].getValue())
-				else:
-					s = s + str(self.value[i][j].getValue()) + '    '
-			if i != len(self.value)-1:
-				s = s + '\n'
-		return s
+		# s = ''
+		# for i in range(0, len(self.value)):
+		# 	for j in range(0, len(self.value[0])):
+		# 		if j == len(self.value[0])-1:
+		# 			s = s + str(self.value[i][j].getValue())
+		# 		else:
+		# 			s = s + str(self.value[i][j].getValue()) + '    '
+		# 	if i != len(self.value)-1:
+		# 		s = s + '\n'
+		# return s
+
+		v = []
+		for i in range(len(self.value)):
+			v.append([])
+			for j in range(len(self.value[0])):
+				v[i].append(self.value[i][j].getValue())
+		return str(v)
+
 
 # End class Matrix ------------------------------------------------------
 
@@ -310,7 +314,8 @@ def readParamFile(filename):
 			# l = line.split()
 			# p = Composite(l[0][:-1], f, None, None)
 			p = Composite('System', f, None, None)
-			print(p.getChildren())
+			# print(p.getChildren())
+			print(p)
 			# p.getComposite()
 	return True
 
