@@ -51,6 +51,9 @@ class Element:
 		self.label = label
 		self.parent = parent
 
+	def getLabel(self):
+		return self.label
+
 # End class Element ----------------------------------------------------------------
 
 # Value class ----------------------------------------------------------------------	
@@ -103,7 +106,8 @@ class Composite(Element):
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
-		self.children = []
+		# self.children = [] # Need to be changed to dictionary in order to use dot notation
+		self.children = {} # Dictionary is used for dot natation
 		self.read(openFile)
 
 	def read(self, openFile):
@@ -121,6 +125,8 @@ class Composite(Element):
 				if l[0][-1] == '(':
 					p = Matrix(l[0][:-1], openFile, self, None)
 					self.addChild(p)
+				if l[0] == '}':
+					break
 			if len(l) == 2:
 				p = Parameter(l[0], None, self, l[1])
 				self.addChild(p)	
@@ -129,13 +135,23 @@ class Composite(Element):
 			# print(line, end='')
 
 	def addChild(self, child):
-		self.children.append(child)
+		# self.children.append(child) # Need to be changed because children will be changed to dictionary
+		label = child.getLabel()
+		if label in self.children:
+			self.children[label] = [self.children[label]]
+			self.children[label].append(child)
+		else:
+			self.children[label] = child
+
+	def getChildren(self):
+		return self.children
 
 	def getComposite(self):
 		print(self.children)
 
-	# def __repr__(self):
-	# 	return
+	def __repr__(self):
+		return str(self.children)
+
 
 # End class Composite ---------------------------------------------------
 
@@ -185,28 +201,45 @@ class Array(Element):
 		l = line.split()
 		# print(line, end='')
 		while l[0] != ']':
-			if len(l) == 1:
-				self.value.append([Value(l[0])])
-			if len(l) == 2:
-				self.value.append([Value(l[0]), Value(l[1])])
+			# if len(l) == 1:
+			# 	self.value.append([Value(l[0])])
+			# if len(l) == 2:
+			# 	self.value.append([Value(l[0]), Value(l[1])])
+
+			ls = []
+			for i in range(len(l)):
+				ls.append(Value(l[i]))
+			self.value.append(ls)
+
 			line = openFile.readline()
 			l = line.split()
 			# print(line, end='')
 
+
 	def __repr__(self):
 		s = ''
-		if len(self.value[0]) == 1:
-			for i in range(0, len(self.value)):
-				if i == len(self.value)-1:
-					s = s + str(self.value[i][0].getValue())
+		# if len(self.value[0]) == 1:
+		# 	for i in range(0, len(self.value)):
+		# 		if i == len(self.value)-1:
+		# 			s = s + str(self.value[i][0].getValue())
+		# 		else:
+		# 			s = s + str(self.value[i][0].getValue()) + '\n'
+		# if len(self.value[0]) == 2:
+		# 	for i in range(0, len(self.value)):
+		# 		if i == len(self.value)-1:
+		# 			s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue())
+		# 		else:
+		# 			s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue()) + '\n'
+
+		for i in range(len(self.value)):
+			for j in range(len(self.value[0])):
+				if j == len(self.value[0])-1:
+					s = s + str(self.value[i][j].getValue())
 				else:
-					s = s + str(self.value[i][0].getValue()) + '\n'
-		if len(self.value[0]) == 2:
-			for i in range(0, len(self.value)):
-				if i == len(self.value)-1:
-					s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue())
-				else:
-					s = s + str(self.value[i][0].getValue()) + '    ' + str(self.value[i][1].getValue()) + '\n'
+					s = s + str(self.value[i][j].getValue()) + '    '
+			if i != len(self.value)-1:
+				s = s + '\n'
+			
 		return s
 
 # End class Array -------------------------------------------------------
@@ -273,22 +306,25 @@ def readParamFile(filename):
 		if firstLine != "System{"+'\n':
 			print('This is not a valid parameter file.')
 		else:
+			# line = f.readline()
+			# l = line.split()
+			# p = Composite(l[0][:-1], f, None, None)
 			p = Composite('System', f, None, None)
-			print(p)
+			print(p.getChildren())
 			# p.getComposite()
 	return True
 
 
-# print(readParamFile('param100'))
+print(readParamFile('param.cs1'))
 
 # a = Parameter('nMonomer', None, None, '2')
 # print(a)
 
-with open('test') as f:
-	# a = Array('block', f, None, None)
-	# print(a)
-	m = Matrix('chi', f, None, None)
-	print(m)
+# with open('test') as f:
+# 	# a = Array('block', f, None, None)
+# 	# print(a)
+# 	m = Matrix('chi', f, None, None)
+# 	print(m)
 
 # line = 'ds                    5.000000000000e-02\n'
 # # print(line[:line.find(' ')])
