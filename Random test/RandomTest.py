@@ -64,17 +64,23 @@
 # 		value[int(att[i][0])][int(att[i][1])] = float(att[i][2])
 # 	print(value)
 
-with open('random') as f:
-	value = []
-	line = f.readline()
-	l = line.split()
-	while l[0] != ']':
-		if len(l) == 1:
-			value.append(l[0])
-		if len(l) == 2:
-			value.append([l[0], l[1]])
-		line = f.readline()
-		l = line.split()
-	print(value)
+# with open('random') as f:
+# 	value = []
+# 	line = f.readline()
+# 	l = line.split()
+# 	while l[0] != ']':
+# 		if len(l) == 1:
+# 			value.append(l[0])
+# 		if len(l) == 2:
+# 			value.append([l[0], l[1]])
+# 		line = f.readline()
+# 		l = line.split()
+# 	print(value)
 
-
+class Dummy(object):
+    def __getattr__(self, attr):
+    	print(attr)
+    	return attr.upper()
+d = Dummy()
+print(d.does_not_exist) # 'DOES_NOT_EXIST'
+d.what_about_this_one  # 'WHAT_ABOUT_THIS_ONE'

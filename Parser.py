@@ -3,15 +3,15 @@
 File Contents:
 	class Element:
 		The Element class is the base class of all types of elements in the parameter
-		file.
+		file. It has four subclasses: Composite, Parameter, Array and Matrix.
 	class Value:
 		A Value object stores the value of a single string that represents all or part
 		part of the value of a parameter. It could implement code to figure out the 
 		type of values among string, integer and floating point.
 	class Composite(Element):
 		A Composite object can be identified by opening and closing curly brackets
-		("{" and "}"). It can parse a parameter file block and store its contents
-		in a form that allows particular types of elements within it to be accessed 
+		('{' and '}'). It can parse a parameter file block and store its contents
+		in a form that allows particular types of items within it to be accessed 
 		and modified.
 	class Parameter(Elememt):
 		A Parameter object contains a parameter label and its value for the individual 
@@ -20,12 +20,12 @@ File Contents:
 		An Array object is a type of parameter that has values stored as elements of
 		a one-dimensional array which is given in a multi-line format in which the
 		first row contains a label that contains the name of the array followed 
-		immediately by an opening square bracket ("[") and the last line contains a 
-		matching closing square bracket ("]") itself. Elements of the
+		immediately by an opening square bracket ('['') and the last line contains a 
+		matching closing square bracket (']') itself. Elements of the
 		one-dimentional array are in between these delimiters with one element per
 		line and appear in order of increasing array index started from 0. 
 	class Matrix(Element):
-		A Matrix object is a type of parameter that has values stored as elments of
+		A Matrix object is a type of parameter that has values stored as elements of
 		a matrix or two-dimentional array in element format that the value of each
 		nonzero element of the matrix appears on separate line. The element format 
 		for a matrix starts with a line that contains a name label followed 
@@ -33,7 +33,8 @@ File Contents:
 		closing paranthesis itself. In between, each line contains a row index, a 
 		column index and value of a single element of the array. 
 	def readParamFile(filename):
-		A method to read the parameter file with specific filename
+		A method to read the parameter file with specific filename and store the data
+		of all parameters in the read file
 	
 '''
 
@@ -41,11 +42,34 @@ File Contents:
 
 class Element:
 	'''
-	Purpose: The base class of all types of elements in the parameter file
+	Purpose: 
+		The base class of all types of elements of the parameter file, with four
+		subclasses:
+			Composite: 
+				Parameter block identified by opening and closing curly brackets 
+				('{' and '}')
+			Parameter: 
+				Single value parameter within a single line
+			Array: 
+				Parameter has values stores in an one-dimentional array identified 
+				by openning and closing square brakets ('[' and ']')
+			Matrix:
+				Parameter has values stores in a two-dimentional array (matrix)
+				identified by openning and closing parenthesis
 	Instance variables:
-		label: Element label in the parameter file
-		parent: Parent object of the element, defult to be None
+		label: Element label of the parameter file
+		parent: The parent of the element, defult to be None
 	Methods:
+		__inti__(self, label, openFile=None, parent=None, value=None):
+			The constructor of the Element object for initiation, with four 
+			arguments: 
+				label, the label of the Element; 
+				openFile, file name of the opened parameter file, defult to be None;
+				parent, the parent of the Elment, defult to be None;
+				value, the value of the Element, defult to be None;
+			that initiate the label and the parent of the Element object
+		getLabel(self): 
+			return the label of the element
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		self.label = label
@@ -61,8 +85,8 @@ class Element:
 class Value:
 	'''
 	Purpose: 
-		The object type to store the single value for parameters by distinguishing 
-		the exact type of it
+		The class represents the object type that store the single value for parameters 
+		of the parameter file by distinguishing the exact type of it
 	Instance variables:
 		value: variable to store a single value of the parameters
 		type: the type of the value stored, either integer, floating point or string
@@ -101,10 +125,35 @@ class Value:
 class Composite(Element):
 	'''
 	Purpose:
+		The class represents the Copmosite element of the parameter file, which
+		is a subclass of the Element class
 	Instance variables:
+		label: The label of the Composite element of the parameter file
+		parent: The parent of the current Composite element in the parameter file
+		children: 
+			The children items of the Composite in the parameter file, defult 
+			to be an empty dictionary
 	Methods:
+		__inti__(self, label, openFile=None, parent=None, value=None):
+			The constructor of the Composite object for initiation, with four 
+			arguments: 
+				label, the label of the Composite; 
+				openFile, file name of the opened parameter file;
+				parent, the parent of the Composite, defult to be None;
+				value, the value of the Composite, defult to be None;
+			that initiate the label and the parent of the Composite object, and 
+			pass in the open file for reading
+		read(self, openFile):
+			method to read the open parameter file, openFile as the argement, line 
+			by line and add the read items into the children variable
+		addChild(self, child):
+			method to add the single item, argument child, into the children variable
+		
+
+
+
 	'''
-	def __init__(self, label, openFile=None, parent=None, value=None):
+	def __init__(self, label, openFile, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
 		# self.children = [] # Need to be changed to dictionary in order to use dot notation
 		self.children = {} # Dictionary is used for dot natation
@@ -151,6 +200,9 @@ class Composite(Element):
 
 	def __repr__(self):
 		return str(self.children)
+
+	def __getattr__(self, attr):
+		return self.children[attr]
 
 
 # End class Composite ---------------------------------------------------
@@ -315,25 +367,16 @@ def readParamFile(filename):
 			# p = Composite(l[0][:-1], f, None, None)
 			p = Composite('System', f, None, None)
 			# print(p.getChildren())
-			print(p)
+			# print(p)
 			# p.getComposite()
-	return True
+			# print(p.Mixture.Polymer[1].phi)
+	return p
 
 
-print(readParamFile('param.cs1'))
+p = readParamFile('param.cs1')
+print(p)
+print(p.Mixture.Polymer[1].phi)
+print(p.Sweep.ns)
+# print(readParamFile('param100'))
 
-# a = Parameter('nMonomer', None, None, '2')
-# print(a)
 
-# with open('test') as f:
-# 	# a = Array('block', f, None, None)
-# 	# print(a)
-# 	m = Matrix('chi', f, None, None)
-# 	print(m)
-
-# line = 'ds                    5.000000000000e-02\n'
-# # print(line[:line.find(' ')])
-# # print(line.rfind(' '))
-# # print(line[line.rfind(' ')+1 : -1])
-# p = Parameter(line[:line.find(' ')], None, Value(line[line.rfind(' ')+1 : -1]))
-# print(p.getValue())
