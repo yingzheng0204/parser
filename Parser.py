@@ -128,30 +128,33 @@ class Composite(Element):
 		The class represents the Copmosite element of the parameter file, which
 		is a subclass of the Element class
 	Instance variables:
-		label: The label of the Composite element of the parameter file
-		parent: The parent of the current Composite element in the parameter file
+		label: the label of the Composite element 
+		parent: the parent of the current Composite element 
 		children: 
-			The children items of the Composite in the parameter file, defult 
+			the children items of the Composite in the parameter file, defult 
 			to be an empty dictionary
 	Methods:
 		__inti__(self, label, openFile=None, parent=None, value=None):
-			The constructor of the Composite object for initiation, with four 
+			the constructor of the Composite object for initiation, with four 
 			arguments: 
 				label, the label of the Composite; 
-				openFile, file name of the opened parameter file;
-				parent, the parent of the Composite, defult to be None;
+				openFile, the open parameter file;
+				parent, the parent of the current Composite, defult to be None;
 				value, the value of the Composite, defult to be None;
 			that initiate the label and the parent of the Composite object, and 
 			pass in the open file for reading
 		read(self, openFile):
 			method to read the open parameter file, openFile as the argement, line 
-			by line and add the read items into the children variable
+			by line and update the read items into the children variable; reading 
+			stop when '}' is read
 		addChild(self, child):
 			method to add the single item, argument child, into the children variable
-		
-
-
-
+		getChildren(self):
+			return the children variable
+		__repr__(self):
+			return the string of children variable, in the dictionary format string
+		__getattr__(self, attr):
+			return the value stored in children with the specific key, argument attr
 	'''
 	def __init__(self, label, openFile, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
@@ -195,15 +198,11 @@ class Composite(Element):
 	def getChildren(self):
 		return self.children
 
-	def getComposite(self):
-		print(self.children)
-
 	def __repr__(self):
 		return str(self.children)
 
 	def __getattr__(self, attr):
 		return self.children[attr]
-
 
 # End class Composite ---------------------------------------------------
 
@@ -212,15 +211,29 @@ class Composite(Element):
 class Parameter(Element):
 	'''
 	Purpose: 
-		The object type of individual parameter of the parameter file
+		The class represents the Parameter element of the parameter file, which
+		is a subclass of the Element class
 	Instance variables:
-		label: the label of the individual parameter
-		parent: the parent of the individual parameter
-		value: the value of the indivisual parameter
+		label: the label of the individual Parameter element 
+		parent: the parent of the current individual Parameter element 
+		value: the value of the individual Parameter element 
 	Methods:
+		__inti__(self, label, openFile=None, parent=None, value=None):
+			the constructor of the Parameter object for initiation, with four 
+			arguments: 
+				label, the label of the Parameter; 
+				openFile, the open parameter file, defult to be None;
+				parent, the parent of the current Parameter, defult to be None;
+				value, the value of the Parameter;
+			that initiate the label, parent and the stored value of the Parameter 
+			object
 		getValue(self): 
-			print out the type of the value of the indivisual parameter 
-			and return the stored value
+			print out the type of the value of the individual parameter and return 
+			the stored value, without argument
+		setValue(self, value):
+			set the new value to the value variable with argument value
+		__repr___(self):
+			return the string that represents the stored value
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
@@ -230,9 +243,11 @@ class Parameter(Element):
 		print(self.value.getType())
 		return self.value.getValue()
 
+	def setValue(self, value):
+		self.value = Value(str(value))
+
 	def __repr__(self):
 		return str(self.value.getValue())
-
 
 # End class Parameter ---------------------------------------------------
 
@@ -241,8 +256,28 @@ class Parameter(Element):
 class Array(Element):
 	'''
 	Purpose:
+		The class represents the Array element of the parameter file, which
+		is a subclass of the Element class
 	Instance variables:
+		label: the label of the Array element
+		parent: the parent of the current Array element
+		value: the value of the Array element, defult to be an empty list
 	Methods:
+		__inti__(self, label, openFile=None, parent=None, value=None):
+			the constructor of the Array object for initiation, with four 
+			arguments: 
+				label, the label of the Array; 
+				openFile, the opened parameter file;
+				parent, the parent of the current Array, defult to be None;
+				value, the value of the Array, defult to be None;
+			that initiate the label and the parent of the Array object, and 
+			pass in the open file for reading
+		read(self, openFile):
+			method to read the open parameter file, openFile as the argement, line 
+			by line and update the value variable according to the read lines;
+			reading stop when ']' is read
+		__repr__(self):
+			return the string of the value variable, in the list format string 
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
@@ -254,11 +289,6 @@ class Array(Element):
 		l = line.split()
 		# print(line, end='')
 		while l[0] != ']':
-			# if len(l) == 1:
-			# 	self.value.append([Value(l[0])])
-			# if len(l) == 2:
-			# 	self.value.append([Value(l[0]), Value(l[1])])
-
 			ls = []
 			for i in range(len(l)):
 				ls.append(Value(l[i]))
@@ -268,19 +298,7 @@ class Array(Element):
 			l = line.split()
 			# print(line, end='')
 
-
 	def __repr__(self):
-		# s = ''
-		# for i in range(len(self.value)):
-		# 	for j in range(len(self.value[0])):
-		# 		if j == len(self.value[0])-1:
-		# 			s = s + str(self.value[i][j].getValue())
-		# 		else:
-		# 			s = s + str(self.value[i][j].getValue()) + '    '
-		# 	if i != len(self.value)-1:
-		# 		s = s + '\n'
-		# return s
-
 		v = []
 		for i in range(len(self.value)):
 			v.append([])
@@ -297,8 +315,28 @@ class Array(Element):
 class Matrix(Element):
 	'''
 	Purpose:
+		The class represents the Matrix element of the parameter file, which
+		is a subclass of the Element class
 	Instance variables:
+		label: the label of the Matrix element
+		parent: the parent of the current Matrix element
+		value: the value of the Matrix element, defult to be an empty list
 	Methods:
+		__inti__(self, label, openFile=None, parent=None, value=None):
+			the constructor of the Matrix object for initiation, with four 
+			arguments: 
+				label, the label of the Matrix; 
+				openFile, the opened parameter file;
+				parent, the parent of the current Matrix, defult to be None;
+				value, the value of the Matrix, defult to be None;
+			that initiate the label and the parent of the Matrix object, and 
+			pass in the open file for reading
+		read(self, openFile):
+			method to read the open parameter file, openFile as the argement, line 
+			by line and update the value variable according to the read lines;
+			reading stop when ')' is read
+		__repr__(self):
+			return the string of the value variable, in the list format string 
 	'''
 
 	def __init__(self, label, openFile=None, parent=None, value=None):
@@ -332,17 +370,6 @@ class Matrix(Element):
 			self.value[int(att[i][0])][int(att[i][1])] = Value(att[i][2])
 
 	def __repr__(self):
-		# s = ''
-		# for i in range(0, len(self.value)):
-		# 	for j in range(0, len(self.value[0])):
-		# 		if j == len(self.value[0])-1:
-		# 			s = s + str(self.value[i][j].getValue())
-		# 		else:
-		# 			s = s + str(self.value[i][j].getValue()) + '    '
-		# 	if i != len(self.value)-1:
-		# 		s = s + '\n'
-		# return s
-
 		v = []
 		for i in range(len(self.value)):
 			v.append([])
@@ -350,33 +377,49 @@ class Matrix(Element):
 				v[i].append(self.value[i][j].getValue())
 		return str(v)
 
-
 # End class Matrix ------------------------------------------------------
 
-
+# readParamFile(filename) Method ----------------------------------------
 
 def readParamFile(filename):
+	'''
+	Argument:
+		filename: string, name of the specific parameter file needed to be read
+	Return:
+		the 'System' composite of the read parameter file
+	Note:
+		'This is not a valid parameter file.' will be print if the read file were
+		not in the correct format and return None
+	'''
 	with open(filename) as f:
 		firstLine = f.readline()
 		# print(firstLine, end='')
 		if firstLine != "System{"+'\n':
+			p = None
 			print('This is not a valid parameter file.')
 		else:
 			# line = f.readline()
 			# l = line.split()
 			# p = Composite(l[0][:-1], f, None, None)
 			p = Composite('System', f, None, None)
-			# print(p.getChildren())
-			# print(p)
-			# p.getComposite()
-			# print(p.Mixture.Polymer[1].phi)
 	return p
 
+# End Method -----------------------------------------------------------
 
-p = readParamFile('param.cs1')
+# Test 1 ---------------------------------------------------------------
+
+p = readParamFile('param.cs1') 
 print(p)
 print(p.Mixture.Polymer[1].phi)
 print(p.Sweep.ns)
-# print(readParamFile('param100'))
+
+# Test 2 ---------------------------------------------------------------
+
+print(readParamFile('param100'))
+
+# Test 3 ---------------------------------------------------------------
+
+print(readParamFile('test')) 
+
 
 
