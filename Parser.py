@@ -411,11 +411,13 @@ def readParamFile(filename):
 p = readParamFile('param.cs1') 
 print(p)
 print(p.Mixture.Polymer[1].phi)
-print(p.Sweep.ns)
+print(p.Sweep.parameters)
 
 # Test 2 ---------------------------------------------------------------
 
-print(readParamFile('param100'))
+p2 = readParamFile('param100')
+print(p2)
+print(p2.Domain)
 
 # Test 3 ---------------------------------------------------------------
 
