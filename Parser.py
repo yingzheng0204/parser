@@ -167,21 +167,32 @@ class Composite(Element):
 		l = line.split()
 		# print(line, end='')
 		while line != '':
-			if len(l) == 1:
-				if l[0][-1] == '{':
-					p = Composite(l[0][:-1], openFile, self, None)
-					self.addChild(p)
-				if l[0][-1] == '[':
+			if l[0][-1] == '{':
+				p = Composite(l[0][:-1], openFile, self, None)
+			elif l[0][-1] == '[':
+				if len(l) == 1:
 					p = Array(l[0][:-1], openFile, self, None)
-					self.addChild(p)
-				if l[0][-1] == '(':
-					p = Matrix(l[0][:-1], openFile, self, None)
-					self.addChild(p)
-				if l[0] == '}':
-					break
-			if len(l) == 2:
-				p = Parameter(l[0], None, self, l[1])
-				self.addChild(p)	
+				else:
+					if l[-1] == ']':
+						value = []
+						for i in range(1, len(l)-1):
+							value.append(Value(l[i]))
+						p = Array(l[0][:-1], None, self, value)
+					else:
+						value = []
+						for i in range(1,len(l)):
+							value.append(Value(l[i]))
+						p = Array(l[0][:-1], openFile, self, value)	
+			elif l[0][-1] == '(':
+				p = Matrix(l[0][:-1], openFile, self, None)
+			elif l[0] == '}':
+				break
+			else:
+				if len(l) == 2:
+					p = Parameter(l[0], None, self, l[1])
+				else:
+					print('This is not a valid line.')
+			self.addChild(p)	
 			line = openFile.readline()
 			l = line.split()
 			# print(line, end='')
@@ -202,7 +213,10 @@ class Composite(Element):
 		return str(self.children)
 
 	def __getattr__(self, attr):
-		return self.children[attr]
+		if type(self.children[attr]) is Parameter:
+			return self.children[attr].value.value
+		else:
+			return self.children[attr]
 
 # End class Composite ---------------------------------------------------
 
@@ -281,18 +295,25 @@ class Array(Element):
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
-		self.value = []
-		self.read(openFile)
+		if value == None:
+			self.value = []
+		else:
+			self.value = value
+		if openFile != None:
+			self.read(openFile)
 
 	def read(self, openFile):
 		line = openFile.readline()
 		l = line.split()
 		# print(line, end='')
 		while l[0] != ']':
-			ls = []
-			for i in range(len(l)):
-				ls.append(Value(l[i]))
-			self.value.append(ls)
+			if len(l) == 1:
+				self.value.append(Value(l[0]))
+			else:
+				ls = []
+				for i in range(len(l)):
+					ls.append(Value(l[i]))
+				self.value.append(ls)
 
 			line = openFile.readline()
 			l = line.split()
@@ -300,10 +321,15 @@ class Array(Element):
 
 	def __repr__(self):
 		v = []
-		for i in range(len(self.value)):
-			v.append([])
-			for j in range(len(self.value[0])):
-				v[i].append(self.value[i][j].getValue())
+		try:
+			len(self.value[0])
+			for i in range(len(self.value)):
+				v.append([])
+				for j in range(len(self.value[0])):
+					v[i].append(self.value[i][j].getValue())
+		except:
+			for i in range(len(self.value)):
+				v.append(self.value[i].getValue())
 		return str(v)
 
 
@@ -368,6 +394,7 @@ class Matrix(Element):
 				self.value[i].append(Value('0'))
 		for i in range(0, len(att)):
 			self.value[int(att[i][0])][int(att[i][1])] = Value(att[i][2])
+			self.value[int(att[i][1])][int(att[i][0])] = Value(att[i][2])
 
 	def __repr__(self):
 		v = []
@@ -411,6 +438,8 @@ def readParamFile(filename):
 p = readParamFile('param.cs1') 
 print(p)
 print(p.Mixture.Polymer[1].phi)
+print(p.Mixture.Polymer[1].phi*2)
+print(p)
 print(p.Sweep.parameters)
 
 # Test 2 ---------------------------------------------------------------
@@ -423,5 +452,14 @@ print(p2.Domain)
 
 print(readParamFile('test')) 
 
+# Test 4 ---------------------------------------------------------------
 
+p3 = readParamFile('param2.cs1')
+print(p3)
+print(p3.Mixture.monomers)
 
+# Test 5 ---------------------------------------------------------------
+
+p4 = readParamFile('param3.cs1')
+print(p4)
+print(p4.Mixture.monomers)
