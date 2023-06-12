@@ -155,6 +155,12 @@ class Composite(Element):
 			return the string of children variable, in the dictionary format string
 		__getattr__(self, attr):
 			return the value stored in children with the specific key, argument attr
+		writeOut(self, filename):
+			method to write out the Composite element to a specific txt file with name
+			of the argument filename
+		writeOutString(self, depth):
+			return the string for writting out with argument depth, the string of 
+			spaces that represents the level of the Composite element
 	'''
 	def __init__(self, label, openFile, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
@@ -173,13 +179,12 @@ class Composite(Element):
 				if len(l) == 1:
 					p = Array(l[0][:-1], openFile, self, None)
 				else:
+					value = []
 					if l[-1] == ']':
-						value = []
 						for i in range(1, len(l)-1):
 							value.append(Value(l[i]))
 						p = Array(l[0][:-1], None, self, value)
 					else:
-						value = []
 						for i in range(1,len(l)):
 							value.append(Value(l[i]))
 						p = Array(l[0][:-1], openFile, self, value)	
@@ -191,7 +196,11 @@ class Composite(Element):
 				if len(l) == 2:
 					p = Parameter(l[0], None, self, l[1])
 				else:
-					print('This is not a valid line.')
+					# print('This is not a valid line.')
+					value = []
+					for i in range(1, len(l)):
+						value.append(Value(l[i]))
+					p = Parameter(l[0], None, self, value)
 			self.addChild(p)	
 			line = openFile.readline()
 			l = line.split()
@@ -214,9 +223,30 @@ class Composite(Element):
 
 	def __getattr__(self, attr):
 		if type(self.children[attr]) is Parameter:
-			return self.children[attr].value.value
+			if type(self.children[attr].value) is list:
+				return self.children[attr].value
+			else:
+				return self.children[attr].value.value
 		else:
 			return self.children[attr]
+
+	def writeOut(self, filename):
+		with open(filename, 'w') as f:
+			f.write(self.writeOutString())
+
+	def writeOutString(self, depth=''):
+		s = depth + self.label + '{' + '\n'
+		for item in self.children.values():
+			if type(item) is list:
+				for i in range(len(item)):
+					s += item[i].writeOutString(depth+'  ')
+			else:
+				s += item.writeOutString(depth+'  ')
+		s += depth + '}\n'
+		return s
+
+		
+
 
 # End class Composite ---------------------------------------------------
 
@@ -248,10 +278,16 @@ class Parameter(Element):
 			set the new value to the value variable with argument value
 		__repr___(self):
 			return the string that represents the stored value
+		writeOutString(self, depth):
+			return the string for writting out with argument depth, the string of 
+			spaces that represents the level of the Parameter element
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
-		self.value = Value(value)
+		if type(value) is list:
+			self.value = value
+		else:
+			self.value = Value(value)
 
 	def getValue(self):
 		print(self.value.getType())
@@ -261,7 +297,33 @@ class Parameter(Element):
 		self.value = Value(str(value))
 
 	def __repr__(self):
-		return str(self.value.getValue())
+		if type(self.value) is list:
+			v = []
+			for i in range(len(self.value)):
+				v.append(self.value[i].getValue())
+			return str(v)
+		else:
+			return str(self.value.getValue())
+
+	def writeOutString(self, depth):
+		s = ''
+		if self.label == 'mesh':
+			s += depth + f'{self.label:40}'
+			if type(self.value) is list:
+				s += f'{self.value[0].getValue():>6}'
+				for i in range(1, len(self.value)):
+					s += f'{self.value[i].getValue():>7}'
+				s += '\n'
+			else:
+				s += f'{self.value.getValue():>6}\n'
+		else:
+			s += depth + f'{self.label:20}'
+			if self.value.getType() is float:
+				v = f'{self.value.getValue():.12e}'
+				s += f'{v:>20}\n'
+			else:
+				s += f'{self.value.getValue():>20}\n'
+		return s
 
 # End class Parameter ---------------------------------------------------
 
@@ -292,6 +354,9 @@ class Array(Element):
 			reading stop when ']' is read
 		__repr__(self):
 			return the string of the value variable, in the list format string 
+		writeOutString(self, depth):
+			return the string for writting out with argument depth, the string of 
+			spaces that represents the level of the Array element
 	'''
 	def __init__(self, label, openFile=None, parent=None, value=None):
 		super().__init__(label, openFile, parent, value)
@@ -321,17 +386,44 @@ class Array(Element):
 
 	def __repr__(self):
 		v = []
-		try:
-			len(self.value[0])
+		if type(self.value[0]) is list:
 			for i in range(len(self.value)):
 				v.append([])
 				for j in range(len(self.value[0])):
 					v[i].append(self.value[i][j].getValue())
-		except:
+		else:
 			for i in range(len(self.value)):
 				v.append(self.value[i].getValue())
 		return str(v)
 
+	def writeOutString(self, depth):
+		s = ''
+		s += depth + self.label + '[' + '\n'
+		if type(self.value[0]) != list:
+			for i in range(len(self.value)):
+				v = f'{self.value[i].getValue():.8e}'
+				s += depth + f'{v:>35}\n'
+		else:
+			if (self.value[0][0].getType() == int) & (len(self.value[0]) == 2):
+				for i in range(len(self.value)):
+					v = f'{self.value[i][1].getValue():.12e}'
+					s += depth + f'{self.value[i][0].getValue():>41}{v:>22}\n'
+			else:
+				for i in range(len(self.value)):
+					s += depth + f'{self.value[i][0].getValue():^20}'
+					for j in range(1, len(self.value[0])):
+						if j == (len(self.value[0])-1):
+							if self.value[i][j].getValue() < 0:
+								v = f'{self.value[i][j].getValue():.11e}'
+							else:
+								v = f'{self.value[i][j].getValue():.12e}'
+							s += f'{v:>22}\n'
+						elif j == 1:
+							s += f'{self.value[i][j].getValue()}'
+						else:
+							s += f'{self.value[i][j].getValue():>5}'
+		s += depth + ']\n'
+		return s
 
 
 # End class Array -------------------------------------------------------
@@ -363,6 +455,9 @@ class Matrix(Element):
 			reading stop when ')' is read
 		__repr__(self):
 			return the string of the value variable, in the list format string 
+		writeOutString(self, depth):
+			return the string for writting out with argument depth, the string of 
+			spaces that represents the level of the Matrix element
 	'''
 
 	def __init__(self, label, openFile=None, parent=None, value=None):
@@ -404,6 +499,15 @@ class Matrix(Element):
 				v[i].append(self.value[i][j].getValue())
 		return str(v)
 
+	def writeOutString(self, depth):
+		s = ''
+		s += depth + self.label + '(\n'
+		for i in range(len(self.value)):
+			for j in range(i+1):
+				s += depth + f'{i:>24}{j:>5}   ' + f'{self.value[i][j].getValue():.12e}\n'
+		s += depth + ')\n'
+		return s
+
 # End class Matrix ------------------------------------------------------
 
 # readParamFile(filename) Method ----------------------------------------
@@ -441,6 +545,7 @@ print(p.Mixture.Polymer[1].phi)
 print(p.Mixture.Polymer[1].phi*2)
 print(p)
 print(p.Sweep.parameters)
+p.writeOut('cs1out')
 
 # Test 2 ---------------------------------------------------------------
 
@@ -463,3 +568,21 @@ print(p3.Mixture.monomers)
 p4 = readParamFile('param3.cs1')
 print(p4)
 print(p4.Mixture.monomers)
+
+# Test 6 ---------------------------------------------------------------
+
+p5 = readParamFile('param_tri')
+print(p5)
+p5.writeOut('triOut')
+
+# Test 7 ---------------------------------------------------------------
+
+p6 = readParamFile('param_solv')
+print(p6)
+p6.writeOut('solvOut')
+
+# Test 8 ---------------------------------------------------------------
+
+p7 = readParamFile('param50down')
+print(p7)
+p7.writeOut('50downOut')

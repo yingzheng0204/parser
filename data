@@ -1,0 +1,53 @@
+System{
+  Mixture{
+    nMonomer                               2
+    monomers[           
+                         1.00000000e+00
+                         1.00000000e+00
+    ]
+    nPolymer                               1
+    Polymer{
+      type                              linear
+      nBlock                                 2
+      blocks[             
+                                              0    4.000000000000e-01
+                                              1    6.000000000000e-01
+      ]
+      phi                   1.000000000000e+00
+    }
+    ds                    5.000000000000e-03
+  }
+  Interaction{
+    chi(                
+                           0    0   0.000000000000e+00
+                           1    0   2.000000000000e+01
+                           1    1   0.000000000000e+00
+    )
+  }
+  Domain{
+    mesh                                        80     80     80
+    lattice                            cubic
+    groupName                       I_a_-3_d
+  }
+  AmIterator{
+    epsilon               1.000000000000e-06
+    maxItr                              1000
+    maxHist                               50
+    isFlexible                             1
+  }
+}
+
+fHelmholtz     2.98494869717e+00
+pressure       3.00349116735e+00
+
+Free energy components:
+fIdeal         9.81467630563e-01
+fInter         2.00348106661e+00
+
+Polymers:
+             phi                 mu          
+    0   1.00000000000e+00   5.98843986453e+00
+
+Lattice parameters:
+        4.01028309702e+00
+

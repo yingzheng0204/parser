@@ -77,10 +77,56 @@
 # 		l = line.split()
 # 	print(value)
 
-class Dummy(object):
-    def __getattr__(self, attr):
-    	print(attr)
-    	return attr.upper()
-d = Dummy()
-print(d.does_not_exist) # 'DOES_NOT_EXIST'
-d.what_about_this_one  # 'WHAT_ABOUT_THIS_ONE'
+# class Dummy(object):
+#     def __getattr__(self, attr):
+#     	print(attr)
+#     	return attr.upper()
+# d = Dummy()
+# print(d.does_not_exist) # 'DOES_NOT_EXIST'
+# d.what_about_this_one  # 'WHAT_ABOUT_THIS_ONE'
+
+# with open('writeTest', 'w') as f:
+# 	depth = '  '
+# 	label = 'chi'
+# 	value = [[0, 10], [10, 0]]
+	
+# 	s = ''
+# 	s = s + depth + label + '(\n'
+# 	for i in range(0, len(value)):
+# 		for j in range(0, i+1):
+# 			s = s + depth + f'{i:>24}{j:>5}   ' + f'{value[i][j]:.12e}\n'
+# 	s = s + depth + ')\n'
+	
+# 	f.write(s)
+
+with open('writeTest', 'w') as f:
+	depth = '  '
+	# label = 'mesh'
+	# label = 'type'
+	# label = 'vMonomer'
+	label = 'isShell'
+	# value = [36, 36, 36]
+	# value = 100
+	# value = 'linear'
+	# value = 1.0
+	value = 0
+
+	s = ''
+	if label == 'mesh':
+		s += depth + f'{label:40}'
+		if type(value) is list:
+			s += f'{value[0]:>6}'
+			for i in range(1, len(value)):
+				s += f'{value[i]:>7}'
+			s += '\n'
+		else:
+			s += f'{value:6}\n'
+	else:
+		s += depth + f'{label:20}'
+		if type(value) is float:
+			v = f'{value:.12e}'
+			s += f'{v:>20}\n'
+		else:
+			s += f'{value:>20}\n'
+	
+	f.write(s)

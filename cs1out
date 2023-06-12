@@ -1,0 +1,54 @@
+System{
+  Mixture{
+    nMonomer                               2
+    monomers[
+                         1.00000000e+00
+                         1.00000000e+00
+    ]
+    nPolymer                               2
+    Polymer{
+      type                              linear
+      nBlock                                 2
+      blocks[
+                                              0    1.250000000000e-01
+                                              1    8.750000000000e-01
+      ]
+      phi                   1.822300000000e-02
+    }
+    Polymer{
+      type                              linear
+      nBlock                                 1
+      blocks[
+                                              1    1.000000000000e+00
+      ]
+      phi                   9.817770000000e-01
+    }
+    vMonomer              4.578700000000e-02
+    ds                    5.000000000000e-03
+  }
+  Interaction{
+    chi(
+                           0    0   0.000000000000e+00
+                           1    0   8.850000000000e+01
+                           1    1   0.000000000000e+00
+    )
+  }
+  Domain{
+    mode                           Spherical
+    xMax                  4.000000000000e+00
+    nx                                   401
+  }
+  Iterator{
+    epsilon               1.000000000000e-07
+  }
+  Sweep{
+    ns                                   200
+    baseFileName                        csl/
+    homogeneousMode                        1
+    nParameter                             2
+    parameters[
+        phi_polymer     0    -1.22200000000e-02
+        phi_polymer     1    1.222000000000e-02
+    ]
+  }
+}
