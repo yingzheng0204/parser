@@ -26,7 +26,7 @@ File Contents:
 		line and appear in order of increasing array index started from 0. 
 	class Matrix(Element):
 		A Matrix object is a type of parameter that has values stored as elements of
-		a matrix or two-dimentional array in element format that the value of each
+		a matrix or two-dimensional array in element format that the value of each
 		nonzero element of the matrix appears on separate line. The element format 
 		for a matrix starts with a line that contains a name label followed 
 		immediately by an opening parenthesis and ends with a line contains a matching 
@@ -52,7 +52,7 @@ class Element:
 				Single value parameter within a single line
 			Array: 
 				Parameter has values stores in an one-dimentional array identified 
-				by openning and closing square brakets ('[' and ']')
+				by openning and closing square brackets ('[' and ']')
 			Matrix:
 				Parameter has values stores in a two-dimentional array (matrix)
 				identified by openning and closing parenthesis
@@ -60,23 +60,28 @@ class Element:
 		label: Element label of the parameter file
 		parent: The parent of the element, defult to be None
 	Methods:
-		__inti__(self, label, openFile=None, parent=None, value=None):
-			The constructor of the Element object for initiation, with four 
+		__init__(self, label, openFile=None, parent=None, val=None):
+			the constructor of the Element object for initiation, with four 
 			arguments: 
 				label, the label of the Element; 
 				openFile, file name of the opened parameter file, defult to be None;
 				parent, the parent of the Elment, defult to be None;
-				value, the value of the Element, defult to be None;
+				val, the value of the Element, defult to be None;
 			that initiate the label and the parent of the Element object
 		getLabel(self): 
 			return the label of the element
+		returnData(slef):
+			pass for the base class
 	'''
-	def __init__(self, label, openFile=None, parent=None, value=None):
+	def __init__(self, label, openFile=None, parent=None, val=None):
 		self.label = label
 		self.parent = parent
 
 	def getLabel(self):
 		return self.label
+
+	def returnData(self):
+		pass
 
 # End class Element ----------------------------------------------------------------
 
@@ -88,9 +93,13 @@ class Value:
 		The class represents the object type that store the single value for parameters 
 		of the parameter file by distinguishing the exact type of it
 	Instance variables:
-		value: variable to store a single value of the parameters
+		val: variable to store a single value of the parameters
 		type: the type of the value stored, either integer, floating point or string
 	Methods:
+		__init__(self, val):
+			the constructor of the Value object for initiation, with one argument:
+				val, the string represents the value needed to be stored for the Value object
+			that initiate the value stored with its correct type
 		getType(self): return the type of stored value
 		getValue(self): return the value of stored value
 	Note:
@@ -98,25 +107,25 @@ class Value:
 		function of distinguishing the exact type of the value
 
 	'''
-	def __init__(self, value):
-		if value.isdigit() == True:
+	def __init__(self, val):
+		if val.isdigit() == True:
 			# print('int')
-			self.value = int(value)
+			self.val = int(val)
 		else:
 			try:
-				self.value = float(value)
+				self.val = float(val)
 				# print('float')
 			except ValueError:
-				self.value = value
+				self.val = val
 				# print('string')
 		# print(self.value)
-		self.type = type(self.value)
+		self.type = type(self.val)
 
 	def getType(self):
 		return self.type
 
 	def getValue(self):
-		return self.value
+		return self.val
 
 # End class Value ---------------------------------------------------------
 
@@ -134,13 +143,13 @@ class Composite(Element):
 			the children items of the Composite in the parameter file, defult 
 			to be an empty dictionary
 	Methods:
-		__inti__(self, label, openFile=None, parent=None, value=None):
+		__init__(self, label, openFile=None, parent=None, val=None):
 			the constructor of the Composite object for initiation, with four 
 			arguments: 
 				label, the label of the Composite; 
 				openFile, the open parameter file;
 				parent, the parent of the current Composite, defult to be None;
-				value, the value of the Composite, defult to be None;
+				val, the value of the Composite, defult to be None;
 			that initiate the label and the parent of the Composite object, and 
 			pass in the open file for reading
 		read(self, openFile):
@@ -161,9 +170,14 @@ class Composite(Element):
 		writeOutString(self, depth):
 			return the string for writting out with argument depth, the string of 
 			spaces that represents the level of the Composite element
+		returnData(self):
+			return the Composite object itself
+		__setattr__(self, label, val):
+			set the new value, argument val, to the specific child of the Composite in
+			the children dictionary, with the name of argument label
 	'''
-	def __init__(self, label, openFile, parent=None, value=None):
-		super().__init__(label, openFile, parent, value)
+	def __init__(self, label, openFile, parent=None, val=None):
+		super().__init__(label, openFile, parent, val)
 		# self.children = [] # Need to be changed to dictionary in order to use dot notation
 		self.children = {} # Dictionary is used for dot natation
 		self.read(openFile)
@@ -174,22 +188,28 @@ class Composite(Element):
 		# print(line, end='')
 		while line != '':
 			if l[0][-1] == '{':
-				p = Composite(l[0][:-1], openFile, self, None)
+				if len(l) == 1:
+					p = Composite(l[0][:-1], openFile, self, None)
+				else:
+					raise Exception('Not valid syntax for Composite element.')
 			elif l[0][-1] == '[':
 				if len(l) == 1:
 					p = Array(l[0][:-1], openFile, self, None)
 				else:
-					value = []
+					val = []
 					if l[-1] == ']':
 						for i in range(1, len(l)-1):
-							value.append(Value(l[i]))
-						p = Array(l[0][:-1], None, self, value)
+							val.append(Value(l[i]))
+						p = Array(l[0][:-1], None, self, val)
 					else:
 						for i in range(1,len(l)):
-							value.append(Value(l[i]))
-						p = Array(l[0][:-1], openFile, self, value)	
+							val.append(Value(l[i]))
+						p = Array(l[0][:-1], openFile, self, val)	
 			elif l[0][-1] == '(':
-				p = Matrix(l[0][:-1], openFile, self, None)
+				if len(l) == 1:
+					p = Matrix(l[0][:-1], openFile, self, None)
+				else:
+					raise Exception('Not valid syntax for Matrix element.')
 			elif l[0] == '}':
 				break
 			else:
@@ -197,10 +217,10 @@ class Composite(Element):
 					p = Parameter(l[0], None, self, l[1])
 				else:
 					# print('This is not a valid line.')
-					value = []
+					val = []
 					for i in range(1, len(l)):
-						value.append(Value(l[i]))
-					p = Parameter(l[0], None, self, value)
+						val.append(Value(l[i]))
+					p = Parameter(l[0], None, self, val)
 			self.addChild(p)	
 			line = openFile.readline()
 			l = line.split()
@@ -219,16 +239,26 @@ class Composite(Element):
 		return self.children
 
 	def __repr__(self):
-		return str(self.children)
+		return self.writeOutString()
+		# return str(self.children)
 
 	def __getattr__(self, attr):
-		if type(self.children[attr]) is Parameter:
-			if type(self.children[attr].value) is list:
-				return self.children[attr].value
+		# if type(self.children[attr]) is Parameter:
+		# 	if type(self.children[attr].val) is list:
+		# 		return self.children[attr].val
+		# 	else:
+		# 		return self.children[attr].val.val
+		# else:
+		# 	return self.children[attr]
+		if attr =='children':
+			return {}
+		if attr in self.children:
+			if type(self.children[attr]) is list:
+				return self.children[attr]
 			else:
-				return self.children[attr].value.value
+				return self.children[attr].returnData()
 		else:
-			return self.children[attr]
+			return self.attr
 
 	def writeOut(self, filename):
 		with open(filename, 'w') as f:
@@ -245,8 +275,14 @@ class Composite(Element):
 		s += depth + '}\n'
 		return s
 
+	def returnData(self):
+		return self
 		
-
+	def __setattr__(self, label, val):
+		if label in self.children:
+			self.children[label].setValue(val)
+		else:
+			self.__dict__[label] = val
 
 # End class Composite ---------------------------------------------------
 
@@ -260,7 +296,7 @@ class Parameter(Element):
 	Instance variables:
 		label: the label of the individual Parameter element 
 		parent: the parent of the current individual Parameter element 
-		value: the value of the individual Parameter element 
+		val: the value of the individual Parameter element 
 	Methods:
 		__inti__(self, label, openFile=None, parent=None, value=None):
 			the constructor of the Parameter object for initiation, with four 
@@ -268,62 +304,81 @@ class Parameter(Element):
 				label, the label of the Parameter; 
 				openFile, the open parameter file, defult to be None;
 				parent, the parent of the current Parameter, defult to be None;
-				value, the value of the Parameter;
+				val, the value of the Parameter;
 			that initiate the label, parent and the stored value of the Parameter 
 			object
 		getValue(self): 
 			print out the type of the value of the individual parameter and return 
 			the stored value, without argument
-		setValue(self, value):
-			set the new value to the value variable with argument value
+		setValue(self, val):
+			set the new value to the val variable with argument val
 		__repr___(self):
 			return the string that represents the stored value
 		writeOutString(self, depth):
 			return the string for writting out with argument depth, the string of 
 			spaces that represents the level of the Parameter element
+		returnData(self):
+			return the exact value of the Parameter object stored as the Value object
 	'''
-	def __init__(self, label, openFile=None, parent=None, value=None):
-		super().__init__(label, openFile, parent, value)
-		if type(value) is list:
-			self.value = value
+	def __init__(self, label, openFile=None, parent=None, val=None):
+		super().__init__(label, openFile, parent, val)
+		if type(val) is list:
+			self.val = val
 		else:
-			self.value = Value(value)
+			self.val = Value(val)
 
 	def getValue(self):
-		print(self.value.getType())
-		return self.value.getValue()
+		print(self.val.getType())
+		return self.val.getValue()
 
-	def setValue(self, value):
-		self.value = Value(str(value))
+	def setValue(self, val):
+		if type(val) is list:
+			if val[0] is list:
+				raise Exception('Not valid input for Parameter.')
+			self.val = []
+			for i in range(len(val)):
+				self.val.append(Value(str(val[i])))
+		else:
+			self.val = Value(str(val))
 
 	def __repr__(self):
-		if type(self.value) is list:
+		if type(self.val) is list:
 			v = []
-			for i in range(len(self.value)):
-				v.append(self.value[i].getValue())
+			for i in range(len(self.val)):
+				v.append(self.val[i].getValue())
 			return str(v)
 		else:
-			return str(self.value.getValue())
+			return str(self.val.getValue())
+		# return self.writeOutString()
 
-	def writeOutString(self, depth):
+	def writeOutString(self, depth=''):
 		s = ''
 		if self.label == 'mesh':
 			s += depth + f'{self.label:40}'
-			if type(self.value) is list:
-				s += f'{self.value[0].getValue():>6}'
-				for i in range(1, len(self.value)):
-					s += f'{self.value[i].getValue():>7}'
+			if type(self.val) is list:
+				s += f'{self.val[0].getValue():>6}'
+				for i in range(1, len(self.val)):
+					s += f'{self.val[i].getValue():>7}'
 				s += '\n'
 			else:
-				s += f'{self.value.getValue():>6}\n'
+				s += f'{self.val.getValue():>6}\n'
 		else:
 			s += depth + f'{self.label:20}'
-			if self.value.getType() is float:
-				v = f'{self.value.getValue():.12e}'
+			if self.val.getType() is float:
+				v = f'{self.val.getValue():.12e}'
 				s += f'{v:>20}\n'
 			else:
-				s += f'{self.value.getValue():>20}\n'
+				s += f'{self.val.getValue():>20}\n'
 		return s
+
+	def returnData(self):
+		if type(self.val) is list:
+			v = []
+			for i in range(len(self.val)):
+				v.append(self.val[i].getValue())
+			return v
+		else:
+			return self.val.getValue()
 
 # End class Parameter ---------------------------------------------------
 
@@ -339,13 +394,13 @@ class Array(Element):
 		parent: the parent of the current Array element
 		value: the value of the Array element, defult to be an empty list
 	Methods:
-		__inti__(self, label, openFile=None, parent=None, value=None):
+		__inti__(self, label, openFile=None, parent=None, val=None):
 			the constructor of the Array object for initiation, with four 
 			arguments: 
 				label, the label of the Array; 
 				openFile, the opened parameter file;
 				parent, the parent of the current Array, defult to be None;
-				value, the value of the Array, defult to be None;
+				val, the value of the Array, defult to be None;
 			that initiate the label and the parent of the Array object, and 
 			pass in the open file for reading
 		read(self, openFile):
@@ -357,13 +412,18 @@ class Array(Element):
 		writeOutString(self, depth):
 			return the string for writting out with argument depth, the string of 
 			spaces that represents the level of the Array element
+		returnData(self):
+			return the list of exact value of the Array object stored as the 
+			Value object
+		setValue(self, val):
+			set new value to the val variable with argement val
 	'''
-	def __init__(self, label, openFile=None, parent=None, value=None):
-		super().__init__(label, openFile, parent, value)
-		if value == None:
-			self.value = []
+	def __init__(self, label, openFile=None, parent=None, val=None):
+		super().__init__(label, openFile, parent, val)
+		if val == None:
+			self.val = []
 		else:
-			self.value = value
+			self.val = val
 		if openFile != None:
 			self.read(openFile)
 
@@ -373,12 +433,12 @@ class Array(Element):
 		# print(line, end='')
 		while l[0] != ']':
 			if len(l) == 1:
-				self.value.append(Value(l[0]))
+				self.val.append(Value(l[0]))
 			else:
 				ls = []
 				for i in range(len(l)):
 					ls.append(Value(l[i]))
-				self.value.append(ls)
+				self.val.append(ls)
 
 			line = openFile.readline()
 			l = line.split()
@@ -386,44 +446,85 @@ class Array(Element):
 
 	def __repr__(self):
 		v = []
-		if type(self.value[0]) is list:
-			for i in range(len(self.value)):
+		if type(self.val[0]) is list:
+			for i in range(len(self.val)):
 				v.append([])
-				for j in range(len(self.value[0])):
-					v[i].append(self.value[i][j].getValue())
+				for j in range(len(self.val[0])):
+					v[i].append(self.val[i][j].getValue())
 		else:
-			for i in range(len(self.value)):
-				v.append(self.value[i].getValue())
+			for i in range(len(self.val)):
+				v.append(self.val[i].getValue())
 		return str(v)
+		# return self.writeOutString()
 
-	def writeOutString(self, depth):
+	def writeOutString(self, depth=''):
 		s = ''
 		s += depth + self.label + '[' + '\n'
-		if type(self.value[0]) != list:
-			for i in range(len(self.value)):
-				v = f'{self.value[i].getValue():.8e}'
-				s += depth + f'{v:>35}\n'
+		if type(self.val[0]) != list:
+			for i in range(len(self.val)):
+				if self.label == 'monomers':
+					v = f'{self.val[i].getValue():.8e}'
+					s += depth + f'{v:>35}\n'
+				else:
+					v = f'{self.val[i].getValue():.12e}'
+					s += depth + f'{v:>40}\n'
 		else:
-			if (self.value[0][0].getType() == int) & (len(self.value[0]) == 2):
-				for i in range(len(self.value)):
-					v = f'{self.value[i][1].getValue():.12e}'
-					s += depth + f'{self.value[i][0].getValue():>41}{v:>22}\n'
+			if (self.val[0][0].getType() == int) & (len(self.val[0]) == 2):
+				for i in range(len(self.val)):
+					v = f'{self.val[i][1].getValue():.12e}'
+					s += depth + f'{self.val[i][0].getValue():>41}{v:>22}\n'
 			else:
-				for i in range(len(self.value)):
-					s += depth + f'{self.value[i][0].getValue():^20}'
-					for j in range(1, len(self.value[0])):
-						if j == (len(self.value[0])-1):
-							if self.value[i][j].getValue() < 0:
-								v = f'{self.value[i][j].getValue():.11e}'
+				for i in range(len(self.val)):
+					s += depth + f'{self.val[i][0].getValue():^20}'
+					for j in range(1, len(self.val[0])):
+						if j == (len(self.val[0])-1):
+							if self.val[i][j].getValue() < 0:
+								v = f'{self.val[i][j].getValue():.11e}'
 							else:
-								v = f'{self.value[i][j].getValue():.12e}'
+								v = f'{self.val[i][j].getValue():.12e}'
 							s += f'{v:>22}\n'
 						elif j == 1:
-							s += f'{self.value[i][j].getValue()}'
+							s += f'{self.val[i][j].getValue()}'
 						else:
-							s += f'{self.value[i][j].getValue():>5}'
+							s += f'{self.val[i][j].getValue():>5}'
 		s += depth + ']\n'
 		return s
+
+	def returnData(self):
+		v = []
+		if type(self.val[0]) is list:
+			for i in range(len(self.val)):
+				v.append([])
+				for j in range(len(self.val[0])):
+					v[i].append(self.val[i][j].getValue())
+		else:
+			for i in range(len(self.val)):
+				v.append(self.val[i].getValue())
+		return v
+
+	def setValue(self, val):
+		if (type(val) is list) == False:
+			raise Exception('Not valid input for Array.')
+		else:
+			v = []
+			if type(val[0]) is list:
+				same = True
+				for i in range(len(val)):
+					if len(val[i]) != 1:
+						same = False
+						break
+				if same == True:
+					for i in range(len(val)):
+						v.append(Value(str(val[i][0])))
+				else:
+					for i in range(len(val)):
+						v.append([])
+						for j in range(len(val[i])):
+							v[i].append(Value(str(val[i][j])))
+			else:
+				for i in range(len(val)):
+					v.append(Value(str(val[i])))
+			self.val = v
 
 
 # End class Array -------------------------------------------------------
@@ -458,11 +559,16 @@ class Matrix(Element):
 		writeOutString(self, depth):
 			return the string for writting out with argument depth, the string of 
 			spaces that represents the level of the Matrix element
+		returnData(self):
+			return the list of exact value of the Matrix object stored as the 
+			Value object
+		setValue(self, val):
+			set new value to the val variable with argement val
 	'''
 
-	def __init__(self, label, openFile=None, parent=None, value=None):
-		super().__init__(label, openFile, parent, value)
-		self.value = []
+	def __init__(self, label, openFile=None, parent=None, val=None):
+		super().__init__(label, openFile, parent, val)
+		self.val = []
 		self.read(openFile)
 
 	def read(self, openFile):
@@ -484,29 +590,65 @@ class Matrix(Element):
 				colMax = att[i][1]
 		size = int(max(rowMax, colMax))+1
 		for i in range(0, size):
-			self.value.append([])
+			self.val.append([])
 			for j in range(0, size):
-				self.value[i].append(Value('0'))
+				self.val[i].append(Value('0'))
 		for i in range(0, len(att)):
-			self.value[int(att[i][0])][int(att[i][1])] = Value(att[i][2])
-			self.value[int(att[i][1])][int(att[i][0])] = Value(att[i][2])
+			self.val[int(att[i][0])][int(att[i][1])] = Value(att[i][2])
+			self.val[int(att[i][1])][int(att[i][0])] = Value(att[i][2])
 
 	def __repr__(self):
 		v = []
-		for i in range(len(self.value)):
+		for i in range(len(self.val)):
 			v.append([])
-			for j in range(len(self.value[0])):
-				v[i].append(self.value[i][j].getValue())
+			for j in range(len(self.val[0])):
+				v[i].append(self.val[i][j].getValue())
 		return str(v)
+		# return self.writeOutString()
 
-	def writeOutString(self, depth):
+	def writeOutString(self, depth=''):
 		s = ''
 		s += depth + self.label + '(\n'
-		for i in range(len(self.value)):
+		for i in range(len(self.val)):
 			for j in range(i+1):
-				s += depth + f'{i:>24}{j:>5}   ' + f'{self.value[i][j].getValue():.12e}\n'
+				s += depth + f'{i:>24}{j:>5}   ' + f'{self.val[i][j].getValue():.12e}\n'
 		s += depth + ')\n'
 		return s
+
+	def returnData(self):
+		v = []
+		for i in range(len(self.val)):
+			v.append([])
+			for j in range(len(self.val[0])):
+				v[i].append(self.val[i][j].getValue())
+		return v
+
+	def setValue(self, val):
+		if type(val) != list:
+			raise TypeError('This is not a valid value for Matrix.')
+		else:
+			if type(val[0]) is list: # input value is a matrix
+				if len(val) != len(val[0]):
+					raise Exception('Input Matrix should be squared.')
+				for i in range(len(val)):
+					for j in range(i):
+						if val[i][j] != val[j][i]:
+							raise Exception('This is not a diagonal symmetric squared Matrix.')
+				for i in range(len(val)):
+					if val[i][i] != 0:
+						raise Exception('The diagonal of the Matrix should all be zero.')
+				self.val = []
+				for i in range(len(val)):
+					self.val.append([])
+					for j in range(len(val[0])):
+						self.val[i].append(Value(str(val[i][j])))
+			else: # input value is a list in format: [x-index, y-index, value]
+				if len(val) != 3:
+					raise Exception('Not valid input format for Matrix modification.')
+				elif (type(val[0]) != int) or (type(val[1]) != int) or ((type(val[-1]) != int) and (type(val[-1]) != float)):
+					raise Exception('Not valid input format for Matrix modification.')
+				self.val[val[0]][val[1]] = Value(str(val[-1]))
+				self.val[val[1]][val[0]] = Value(str(val[-1]))
 
 # End class Matrix ------------------------------------------------------
 
@@ -527,7 +669,7 @@ def readParamFile(filename):
 		# print(firstLine, end='')
 		if firstLine != "System{"+'\n':
 			p = None
-			print('This is not a valid parameter file.')
+			raise Exception('This is not a valid parameter file.')
 		else:
 			# line = f.readline()
 			# l = line.split()
@@ -541,48 +683,68 @@ def readParamFile(filename):
 
 p = readParamFile('param.cs1') 
 print(p)
+# print(p.Mixture.Polymer[1].phi)
+# print(p.Mixture.Polymer[1].phi*2)
+# print(p)
+p.Mixture.Polymer[1].phi *= 2
 print(p.Mixture.Polymer[1].phi)
-print(p.Mixture.Polymer[1].phi*2)
+# print(p.Mixture.Polymer[1].__dir__())
+# print(p.Sweep.parameters)
+# print(p.Sweep.parameters[0])
+# p.writeOut('cs1out')
+# p.Interaction.chi = [1, 0, 0.8]
+# p.Interaction.chi = [[0, 0.8], [0.8, 0]]
+# print(p.Interaction.chi)
+# p.Mixture.monomers = [[2.0],[2.0]]
+# print(p.Mixture.monomers)
 print(p)
-print(p.Sweep.parameters)
-p.writeOut('cs1out')
 
-# Test 2 ---------------------------------------------------------------
+# # Test 2 ---------------------------------------------------------------
 
-p2 = readParamFile('param100')
-print(p2)
-print(p2.Domain)
+# p2 = readParamFile('param100')
+# print(p2)
+# print(p2.Domain)
 
 # Test 3 ---------------------------------------------------------------
 
-print(readParamFile('test')) 
+try:
+	print(readParamFile('test')) 
+except Exception as exc:
+	print(exc)
 
-# Test 4 ---------------------------------------------------------------
+# # Test 4 ---------------------------------------------------------------
 
-p3 = readParamFile('param2.cs1')
-print(p3)
-print(p3.Mixture.monomers)
+# p3 = readParamFile('param2.cs1')
+# print(p3)
+# print(p3.Mixture.monomers)
+# print(p3.Mixture.monomers[1])
 
-# Test 5 ---------------------------------------------------------------
+# # Test 5 ---------------------------------------------------------------
 
-p4 = readParamFile('param3.cs1')
-print(p4)
-print(p4.Mixture.monomers)
+# p4 = readParamFile('param3.cs1')
+# print(p4)
+# print(p4.Mixture.monomers)
 
-# Test 6 ---------------------------------------------------------------
+# # Test 6 ---------------------------------------------------------------
 
-p5 = readParamFile('param_tri')
-print(p5)
-p5.writeOut('triOut')
+# p5 = readParamFile('param_tri')
+# print(p5)
+# p5.writeOut('triOut')
 
-# Test 7 ---------------------------------------------------------------
+# # Test 7 ---------------------------------------------------------------
 
-p6 = readParamFile('param_solv')
-print(p6)
-p6.writeOut('solvOut')
+# p6 = readParamFile('param_solv')
+# print(p6)
+# p6.writeOut('solvOut')
 
-# Test 8 ---------------------------------------------------------------
+# # Test 8 ---------------------------------------------------------------
 
-p7 = readParamFile('param50down')
-print(p7)
-p7.writeOut('50downOut')
+# p7 = readParamFile('param50down')
+# print(p7)
+# p7.writeOut('50downOut')
+
+# # Test 9 ---------------------------------------------------------------
+
+# p8 = readParamFile('param_film')
+# print(p8)
+# p8.writeOut('filmOut')
