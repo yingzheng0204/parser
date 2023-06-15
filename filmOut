@@ -2,8 +2,8 @@ System{
   Mixture{
     nMonomer                               2
     monomers[
-                         1.00000000e+00
-                         1.00000000e+00
+                          1.000000000000e+00
+                          1.000000000000e+00
     ]
     nPolymer                               1
     Polymer{
@@ -25,7 +25,7 @@ System{
     )
   }
   Domain{
-    mesh                                        72
+    mesh                                  72
     lattice                         lamellar
     groupName                            P_1
   }

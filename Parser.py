@@ -178,14 +178,12 @@ class Composite(Element):
 	'''
 	def __init__(self, label, openFile, parent=None, val=None):
 		super().__init__(label, openFile, parent, val)
-		# self.children = [] # Need to be changed to dictionary in order to use dot notation
-		self.children = {} # Dictionary is used for dot natation
+		self.children = {} 
 		self.read(openFile)
 
 	def read(self, openFile):
 		line = openFile.readline()
 		l = line.split()
-		# print(line, end='')
 		while line != '':
 			if l[0][-1] == '{':
 				if len(l) == 1:
@@ -216,7 +214,6 @@ class Composite(Element):
 				if len(l) == 2:
 					p = Parameter(l[0], None, self, l[1])
 				else:
-					# print('This is not a valid line.')
 					val = []
 					for i in range(1, len(l)):
 						val.append(Value(l[i]))
@@ -224,10 +221,8 @@ class Composite(Element):
 			self.addChild(p)	
 			line = openFile.readline()
 			l = line.split()
-			# print(line, end='')
 
 	def addChild(self, child):
-		# self.children.append(child) # Need to be changed because children will be changed to dictionary
 		label = child.getLabel()
 		if label in self.children:
 			self.children[label] = [self.children[label]]
@@ -240,16 +235,8 @@ class Composite(Element):
 
 	def __repr__(self):
 		return self.writeOutString()
-		# return str(self.children)
 
 	def __getattr__(self, attr):
-		# if type(self.children[attr]) is Parameter:
-		# 	if type(self.children[attr].val) is list:
-		# 		return self.children[attr].val
-		# 	else:
-		# 		return self.children[attr].val.val
-		# else:
-		# 	return self.children[attr]
 		if attr =='children':
 			return {}
 		if attr in self.children:
@@ -349,19 +336,15 @@ class Parameter(Element):
 			return str(v)
 		else:
 			return str(self.val.getValue())
-		# return self.writeOutString()
 
 	def writeOutString(self, depth=''):
 		s = ''
-		if self.label == 'mesh':
+		if type(self.val) is list:
 			s += depth + f'{self.label:40}'
-			if type(self.val) is list:
-				s += f'{self.val[0].getValue():>6}'
-				for i in range(1, len(self.val)):
-					s += f'{self.val[i].getValue():>7}'
-				s += '\n'
-			else:
-				s += f'{self.val.getValue():>6}\n'
+			s += f'{self.val[0].getValue():>6}'
+			for i in range(1, len(self.val)):
+				s += f'{self.val[i].getValue():>7}'
+			s += '\n'
 		else:
 			s += depth + f'{self.label:20}'
 			if self.val.getType() is float:
@@ -430,7 +413,6 @@ class Array(Element):
 	def read(self, openFile):
 		line = openFile.readline()
 		l = line.split()
-		# print(line, end='')
 		while l[0] != ']':
 			if len(l) == 1:
 				self.val.append(Value(l[0]))
@@ -442,7 +424,6 @@ class Array(Element):
 
 			line = openFile.readline()
 			l = line.split()
-			# print(line, end='')
 
 	def __repr__(self):
 		v = []
@@ -455,19 +436,14 @@ class Array(Element):
 			for i in range(len(self.val)):
 				v.append(self.val[i].getValue())
 		return str(v)
-		# return self.writeOutString()
 
 	def writeOutString(self, depth=''):
 		s = ''
 		s += depth + self.label + '[' + '\n'
 		if type(self.val[0]) != list:
 			for i in range(len(self.val)):
-				if self.label == 'monomers':
-					v = f'{self.val[i].getValue():.8e}'
-					s += depth + f'{v:>35}\n'
-				else:
-					v = f'{self.val[i].getValue():.12e}'
-					s += depth + f'{v:>40}\n'
+				v = f'{self.val[i].getValue():.12e}'
+				s += depth + f'{v:>40}\n'
 		else:
 			if (self.val[0][0].getType() == int) & (len(self.val[0]) == 2):
 				for i in range(len(self.val)):
@@ -575,12 +551,10 @@ class Matrix(Element):
 		att = []
 		line = openFile.readline()
 		l = line.split()
-		# print(line, end='')
 		while l[0] != ')':
 			att.append(l)
 			line = openFile.readline()
 			l = line.split()
-			# print(line, end='')
 		rowMax = att[0][0]
 		colMax = att[0][1]
 		for i in range(1, len(att)):
@@ -604,7 +578,6 @@ class Matrix(Element):
 			for j in range(len(self.val[0])):
 				v[i].append(self.val[i][j].getValue())
 		return str(v)
-		# return self.writeOutString()
 
 	def writeOutString(self, depth=''):
 		s = ''
@@ -683,68 +656,21 @@ def readParamFile(filename):
 
 p = readParamFile('param.cs1') 
 print(p)
-# print(p.Mixture.Polymer[1].phi)
-# print(p.Mixture.Polymer[1].phi*2)
-# print(p)
+p.writeOut('cs1out')
+print(p.Sweep.parameters)
+print(p.Sweep.parameters[0])
 p.Mixture.Polymer[1].phi *= 2
 print(p.Mixture.Polymer[1].phi)
-# print(p.Mixture.Polymer[1].__dir__())
-# print(p.Sweep.parameters)
-# print(p.Sweep.parameters[0])
-# p.writeOut('cs1out')
-# p.Interaction.chi = [1, 0, 0.8]
-# p.Interaction.chi = [[0, 0.8], [0.8, 0]]
-# print(p.Interaction.chi)
-# p.Mixture.monomers = [[2.0],[2.0]]
-# print(p.Mixture.monomers)
+p.Interaction.chi = [1, 0, 0.8]
+print(p.Interaction.chi)
+p.Mixture.monomers = [[2.0],[2.0]]
+print(p.Mixture.monomers)
 print(p)
 
-# # Test 2 ---------------------------------------------------------------
+# Test 2 ---------------------------------------------------------------
 
-# p2 = readParamFile('param100')
-# print(p2)
-# print(p2.Domain)
-
-# Test 3 ---------------------------------------------------------------
-
-try:
-	print(readParamFile('test')) 
-except Exception as exc:
-	print(exc)
-
-# # Test 4 ---------------------------------------------------------------
-
-# p3 = readParamFile('param2.cs1')
-# print(p3)
-# print(p3.Mixture.monomers)
-# print(p3.Mixture.monomers[1])
-
-# # Test 5 ---------------------------------------------------------------
-
-# p4 = readParamFile('param3.cs1')
-# print(p4)
-# print(p4.Mixture.monomers)
-
-# # Test 6 ---------------------------------------------------------------
-
-# p5 = readParamFile('param_tri')
-# print(p5)
-# p5.writeOut('triOut')
-
-# # Test 7 ---------------------------------------------------------------
-
-# p6 = readParamFile('param_solv')
-# print(p6)
-# p6.writeOut('solvOut')
-
-# # Test 8 ---------------------------------------------------------------
-
-# p7 = readParamFile('param50down')
-# print(p7)
-# p7.writeOut('50downOut')
-
-# # Test 9 ---------------------------------------------------------------
-
-# p8 = readParamFile('param_film')
-# print(p8)
-# p8.writeOut('filmOut')
+p2 = readParamFile('param_film')
+print(p2)
+p2.writeOut('filmOut')
+p2.Interaction.chi = [[0, 0.8], [0.8, 0]]
+print(p2)

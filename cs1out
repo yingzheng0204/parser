@@ -2,8 +2,8 @@ System{
   Mixture{
     nMonomer                               2
     monomers[
-                         1.00000000e+00
-                         1.00000000e+00
+                          1.000000000000e+00
+                          1.000000000000e+00
     ]
     nPolymer                               2
     Polymer{
