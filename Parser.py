@@ -80,8 +80,7 @@ class Value:
 class Composite:
 	'''
 	Purpose:
-		The class represents the Copmosite element of the parameter file, which
-		is a subclass of the Element class
+		The class represents the Copmosite element of the parameter file
 	Instance variables:
 		label: the label of the Composite element 
 		children: 
@@ -92,7 +91,7 @@ class Composite:
 			the constructor of the Composite object for initiation, with four 
 			arguments: 
 				label, the label of the Composite, defult to be None; 
-				file, the open parameter file;
+				file, the variable represents the filename or a open file;
 			that initiate the label and the parent of the Composite object, and 
 			pass in the open file for reading
 		read(self, openFile):
