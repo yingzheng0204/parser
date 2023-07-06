@@ -87,11 +87,11 @@ class Composite:
 			the children items of the Composite in the parameter file, defult 
 			to be an empty dictionary
 	Methods:
-		__init__(self, label=None, file=None):
+		__init__(self, file=None, label=None):
 			the constructor of the Composite object for initiation, with four 
 			arguments: 
-				label, the label of the Composite, defult to be None; 
 				file, the variable represents the filename or a open file;
+				label, the label of the Composite, defult to be None; 
 			that initiate the label and the parent of the Composite object, and 
 			pass in the open file for reading
 		read(self, openFile):
